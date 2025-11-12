@@ -12,6 +12,7 @@ interface Complaint {
   id: string;
   title: string;
   description: string;
+  category: "academic" | "infrastructure" | "technical" | "administrative" | "other";
   status: "pending" | "in_progress" | "resolved";
   created_at: string;
   updated_at: string;
@@ -86,7 +87,7 @@ const ComplaintDetail = () => {
             .from("profiles")
             .select("name")
             .eq("id", reply.admin_id)
-            .single();
+            .maybeSingle();
           
           return {
             ...reply,
@@ -121,8 +122,8 @@ const ComplaintDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-6">
-      <div className="container mx-auto max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-4 md:p-6">
+      <div className="container mx-auto max-w-5xl">
         <Button
           variant="ghost"
           onClick={() => navigate("/student")}
@@ -134,9 +135,14 @@ const ComplaintDetail = () => {
 
         <Card className="mb-6">
           <CardHeader>
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
               <div className="flex-1">
-                <CardTitle className="text-3xl mb-2">{complaint.title}</CardTitle>
+                <CardTitle className="text-2xl md:text-3xl mb-2">{complaint.title}</CardTitle>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary capitalize">
+                    {complaint.category}
+                  </span>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Submitted {new Date(complaint.created_at).toLocaleDateString()} • 
                   Last updated {new Date(complaint.updated_at).toLocaleDateString()}

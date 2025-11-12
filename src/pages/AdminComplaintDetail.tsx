@@ -15,6 +15,7 @@ interface Complaint {
   id: string;
   title: string;
   description: string;
+  category: "academic" | "infrastructure" | "technical" | "administrative" | "other";
   status: "pending" | "in_progress" | "resolved";
   created_at: string;
   updated_at: string;
@@ -64,20 +65,26 @@ const AdminComplaintDetail = () => {
         .from("complaints")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (complaintError) throw complaintError;
+      if (!complaintData) {
+        toast.error("Complaint not found");
+        setLoading(false);
+        return;
+      }
       
       // Fetch student profile
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("name, email")
         .eq("id", complaintData.student_id)
-        .single();
-
-      if (profileError) throw profileError;
+        .maybeSingle();
       
-      setComplaint({ ...complaintData, profiles: profileData });
+      setComplaint({ 
+        ...complaintData, 
+        profiles: profileData || { name: "Unknown Student", email: "" }
+      });
 
       const { data: attachmentsData, error: attachmentsError } = await supabase
         .from("complaint_attachments")
@@ -181,7 +188,7 @@ const AdminComplaintDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-4 md:p-6">
       <div className="container mx-auto max-w-5xl">
         <Button
           variant="ghost"
@@ -194,20 +201,25 @@ const AdminComplaintDetail = () => {
 
         <Card className="mb-6">
           <CardHeader>
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
               <div className="flex-1">
-                <CardTitle className="text-3xl mb-2">{complaint.title}</CardTitle>
+                <CardTitle className="text-2xl md:text-3xl mb-2">{complaint.title}</CardTitle>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary capitalize">
+                    {complaint.category}
+                  </span>
+                </div>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Student: {complaint.profiles.name} ({complaint.profiles.email})
+                  Student: {complaint.profiles.name} {complaint.profiles.email && `(${complaint.profiles.email})`}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Submitted {new Date(complaint.created_at).toLocaleDateString()}
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-3">
+              <div className="flex flex-col items-start md:items-end gap-3">
                 <StatusBadge status={complaint.status} />
                 <Select value={complaint.status} onValueChange={handleStatusUpdate}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full md:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

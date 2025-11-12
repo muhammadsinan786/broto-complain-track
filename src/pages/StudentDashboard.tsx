@@ -12,6 +12,7 @@ interface Complaint {
   id: string;
   title: string;
   description: string;
+  category: "academic" | "infrastructure" | "technical" | "administrative" | "other";
   status: "pending" | "in_progress" | "resolved";
   created_at: string;
 }
@@ -57,14 +58,14 @@ const StudentDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10">
-      <div className="container mx-auto p-6 max-w-6xl">
-        <div className="flex justify-between items-center mb-8">
+      <div className="container mx-auto p-4 md:p-6 max-w-6xl">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-foreground">My Complaints</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">My Complaints</h1>
             <p className="text-muted-foreground mt-2">Track and manage your submitted complaints</p>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={() => navigate("/student/new")} size="lg">
+          <div className="flex gap-3 flex-wrap">
+            <Button onClick={() => navigate("/student/new")} size="lg" className="flex-1 md:flex-none">
               <Plus className="mr-2 h-5 w-5" />
               New Complaint
             </Button>
@@ -94,9 +95,14 @@ const StudentDashboard = () => {
                 onClick={() => navigate(`/student/complaint/${complaint.id}`)}
               >
                 <CardHeader>
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
                     <div className="flex-1">
                       <CardTitle className="text-xl mb-2">{complaint.title}</CardTitle>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary capitalize">
+                          {complaint.category}
+                        </span>
+                      </div>
                       <CardDescription className="line-clamp-2">
                         {complaint.description}
                       </CardDescription>

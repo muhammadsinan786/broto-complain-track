@@ -81,6 +81,7 @@ export type Database = {
       complaints: {
         Row: {
           assigned_admin_id: string | null
+          category: Database["public"]["Enums"]["complaint_category"]
           created_at: string
           description: string
           id: string
@@ -91,6 +92,7 @@ export type Database = {
         }
         Insert: {
           assigned_admin_id?: string | null
+          category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
           description: string
           id?: string
@@ -101,6 +103,7 @@ export type Database = {
         }
         Update: {
           assigned_admin_id?: string | null
+          category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
           description?: string
           id?: string
@@ -171,6 +174,12 @@ export type Database = {
     }
     Enums: {
       app_role: "student" | "admin"
+      complaint_category:
+        | "academic"
+        | "infrastructure"
+        | "technical"
+        | "administrative"
+        | "other"
       complaint_status: "pending" | "in_progress" | "resolved"
     }
     CompositeTypes: {
@@ -300,6 +309,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "admin"],
+      complaint_category: [
+        "academic",
+        "infrastructure",
+        "technical",
+        "administrative",
+        "other",
+      ],
       complaint_status: ["pending", "in_progress", "resolved"],
     },
   },

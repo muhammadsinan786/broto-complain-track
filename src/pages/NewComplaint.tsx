@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +16,7 @@ const NewComplaint = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState<"academic" | "infrastructure" | "technical" | "administrative" | "other">("other");
   const [files, setFiles] = useState<FileList | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,6 +37,7 @@ const NewComplaint = () => {
         .insert({
           title: title.trim(),
           description: description.trim(),
+          category: category,
           student_id: user.id,
           status: "pending",
         })
@@ -48,7 +51,7 @@ const NewComplaint = () => {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const fileExt = file.name.split(".").pop();
-          const fileName = `${user.id}/${complaint.id}/${Date.now()}.${fileExt}`;
+          const fileName = `${complaint.id}/${Date.now()}.${fileExt}`;
 
           const { error: uploadError } = await supabase.storage
             .from("complaint-attachments")
@@ -56,16 +59,16 @@ const NewComplaint = () => {
 
           if (uploadError) throw uploadError;
 
-          // Get public URL
-          const { data: { publicUrl } } = supabase.storage
+          // Get signed URL for private bucket
+          const { data: urlData } = await supabase.storage
             .from("complaint-attachments")
-            .getPublicUrl(fileName);
+            .createSignedUrl(fileName, 31536000); // 1 year expiry
 
           // Save attachment record
           await supabase.from("complaint_attachments").insert({
             complaint_id: complaint.id,
             file_name: file.name,
-            file_url: publicUrl,
+            file_url: urlData?.signedUrl || "",
           });
         }
       }
@@ -81,7 +84,7 @@ const NewComplaint = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-4 md:p-6">
       <div className="container mx-auto max-w-3xl">
         <Button
           variant="ghost"
@@ -108,6 +111,22 @@ const NewComplaint = () => {
                   required
                   maxLength={200}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Category *</Label>
+                <Select value={category} onValueChange={(value: any) => setCategory(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="academic">Academic</SelectItem>
+                    <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                    <SelectItem value="technical">Technical</SelectItem>
+                    <SelectItem value="administrative">Administrative</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
