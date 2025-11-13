@@ -17,6 +17,8 @@ const NewComplaint = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<"academic" | "infrastructure" | "technical" | "administrative" | "other">("other");
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,6 +40,8 @@ const NewComplaint = () => {
           title: title.trim(),
           description: description.trim(),
           category: category,
+          priority: priority,
+          is_anonymous: isAnonymous,
           student_id: user.id,
           status: "pending",
         })
@@ -59,16 +63,11 @@ const NewComplaint = () => {
 
           if (uploadError) throw uploadError;
 
-          // Get signed URL for private bucket
-          const { data: urlData } = await supabase.storage
-            .from("complaint-attachments")
-            .createSignedUrl(fileName, 31536000); // 1 year expiry
-
-          // Save attachment record
+          // Save attachment record with file path, not signed URL
           await supabase.from("complaint_attachments").insert({
             complaint_id: complaint.id,
             file_name: file.name,
-            file_url: urlData?.signedUrl || "",
+            file_url: fileName, // Store the path, not the signed URL
           });
         }
       }
@@ -127,6 +126,33 @@ const NewComplaint = () => {
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority *</Label>
+                <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="anonymous"
+                  checked={isAnonymous}
+                  onChange={(e) => setIsAnonymous(e.target.checked)}
+                  className="h-4 w-4 rounded border-border"
+                />
+                <Label htmlFor="anonymous" className="text-sm font-normal">
+                  Submit anonymously (your identity will be hidden)
+                </Label>
               </div>
 
               <div className="space-y-2">

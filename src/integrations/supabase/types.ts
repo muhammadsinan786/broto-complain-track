@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_templates: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       complaint_attachments: {
         Row: {
           complaint_id: string
@@ -39,6 +63,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "complaint_attachments_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaint_messages: {
+        Row: {
+          complaint_id: string
+          created_at: string | null
+          id: string
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          complaint_id: string
+          created_at?: string | null
+          id?: string
+          message: string
+          sender_id: string
+        }
+        Update: {
+          complaint_id?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_messages_complaint_id_fkey"
             columns: ["complaint_id"]
             isOneToOne: false
             referencedRelation: "complaints"
@@ -84,7 +140,11 @@ export type Database = {
           category: Database["public"]["Enums"]["complaint_category"]
           created_at: string
           description: string
+          feedback: string | null
           id: string
+          is_anonymous: boolean | null
+          priority: Database["public"]["Enums"]["priority_level"] | null
+          rating: number | null
           status: Database["public"]["Enums"]["complaint_status"]
           student_id: string
           title: string
@@ -95,7 +155,11 @@ export type Database = {
           category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
           description: string
+          feedback?: string | null
           id?: string
+          is_anonymous?: boolean | null
+          priority?: Database["public"]["Enums"]["priority_level"] | null
+          rating?: number | null
           status?: Database["public"]["Enums"]["complaint_status"]
           student_id: string
           title: string
@@ -106,7 +170,11 @@ export type Database = {
           category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
           description?: string
+          feedback?: string | null
           id?: string
+          is_anonymous?: boolean | null
+          priority?: Database["public"]["Enums"]["priority_level"] | null
+          rating?: number | null
           status?: Database["public"]["Enums"]["complaint_status"]
           student_id?: string
           title?: string
@@ -181,6 +249,7 @@ export type Database = {
         | "administrative"
         | "other"
       complaint_status: "pending" | "in_progress" | "resolved"
+      priority_level: "low" | "medium" | "high"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -317,6 +386,7 @@ export const Constants = {
         "other",
       ],
       complaint_status: ["pending", "in_progress", "resolved"],
+      priority_level: ["low", "medium", "high"],
     },
   },
 } as const

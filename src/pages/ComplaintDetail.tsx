@@ -5,15 +5,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/StatusBadge";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Send, Star } from "lucide-react";
 import { toast } from "sonner";
+import { PriorityBadge } from "@/components/PriorityBadge";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 interface Complaint {
   id: string;
   title: string;
   description: string;
   category: "academic" | "infrastructure" | "technical" | "administrative" | "other";
+  priority: "low" | "medium" | "high";
   status: "pending" | "in_progress" | "resolved";
+  rating?: number;
+  feedback?: string;
+  is_anonymous: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -22,12 +29,14 @@ interface Attachment {
   id: string;
   file_name: string;
   file_url: string;
+  signed_url: string;
 }
 
-interface Reply {
+interface Message {
   id: string;
   message: string;
   created_at: string;
+  sender_id: string;
   profiles: {
     name: string;
   };
@@ -39,8 +48,13 @@ const ComplaintDetail = () => {
   const { user } = useAuth();
   const [complaint, setComplaint] = useState<Complaint | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [replies, setReplies] = useState<Reply[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [rating, setRating] = useState(0);
+  const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(true);
+  const [submittingRating, setSubmittingRating] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -62,46 +76,109 @@ const ComplaintDetail = () => {
       if (complaintError) throw complaintError;
       setComplaint(complaintData);
 
-      // Fetch attachments
+      // Fetch attachments with signed URLs
       const { data: attachmentsData, error: attachmentsError } = await supabase
         .from("complaint_attachments")
         .select("*")
         .eq("complaint_id", id);
 
       if (attachmentsError) throw attachmentsError;
-      setAttachments(attachmentsData || []);
-
-      // Fetch replies with admin profile names
-      const { data: repliesData, error: repliesError } = await supabase
-        .from("complaint_replies")
-        .select("*, admin_id")
-        .eq("complaint_id", id)
-        .order("created_at", { ascending: true });
-
-      if (repliesError) throw repliesError;
       
-      // Fetch admin profiles for replies
-      const repliesWithProfiles = await Promise.all(
-        (repliesData || []).map(async (reply) => {
-          const { data: adminProfile } = await supabase
-            .from("profiles")
-            .select("name")
-            .eq("id", reply.admin_id)
-            .maybeSingle();
+      // Generate signed URLs for attachments
+      const attachmentsWithUrls = await Promise.all(
+        (attachmentsData || []).map(async (attachment) => {
+          const { data: signedData } = await supabase.storage
+            .from("complaint-attachments")
+            .createSignedUrl(attachment.file_url, 3600);
           
           return {
-            ...reply,
-            profiles: adminProfile || { name: "Admin" },
+            ...attachment,
+            signed_url: signedData?.signedUrl || attachment.file_url,
           };
         })
       );
       
-      setReplies(repliesWithProfiles);
+      setAttachments(attachmentsWithUrls);
+
+      // Fetch messages with sender profiles
+      const { data: messagesData, error: messagesError } = await supabase
+        .from("complaint_messages")
+        .select("*, sender_id")
+        .eq("complaint_id", id)
+        .order("created_at", { ascending: true });
+
+      if (messagesError) throw messagesError;
+      
+      // Fetch sender profiles for messages
+      const messagesWithProfiles = await Promise.all(
+        (messagesData || []).map(async (message) => {
+          const { data: senderProfile } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("id", message.sender_id)
+            .maybeSingle();
+          
+          return {
+            ...message,
+            profiles: senderProfile || { name: "User" },
+          };
+        })
+      );
+      
+      setMessages(messagesWithProfiles);
     } catch (error) {
       console.error("Error fetching complaint details:", error);
       toast.error("Failed to load complaint details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !user) return;
+
+    setSendingMessage(true);
+    try {
+      const { error } = await supabase
+        .from("complaint_messages")
+        .insert({
+          complaint_id: id,
+          sender_id: user.id,
+          message: newMessage,
+        });
+
+      if (error) throw error;
+
+      setNewMessage("");
+      fetchComplaintDetails();
+      toast.success("Message sent");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const handleSubmitRating = async () => {
+    if (rating === 0 || !user) return;
+
+    setSubmittingRating(true);
+    try {
+      const { error } = await supabase
+        .from("complaints")
+        .update({ rating, feedback })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast.success("Thank you for your feedback!");
+      fetchComplaintDetails();
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      toast.error("Failed to submit rating");
+    } finally {
+      setSubmittingRating(false);
     }
   };
 
@@ -142,6 +219,12 @@ const ComplaintDetail = () => {
                   <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary capitalize">
                     {complaint.category}
                   </span>
+                  <PriorityBadge priority={complaint.priority} />
+                  {complaint.is_anonymous && (
+                    <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                      Anonymous
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Submitted {new Date(complaint.created_at).toLocaleDateString()} • 
@@ -171,7 +254,7 @@ const ComplaintDetail = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => window.open(attachment.file_url, "_blank")}
+                          onClick={() => window.open(attachment.signed_url, "_blank")}
                         >
                           <Download className="h-4 w-4 mr-2" />
                           Download
@@ -185,25 +268,118 @@ const ComplaintDetail = () => {
           </CardContent>
         </Card>
 
-        {replies.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Conversation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 mb-4 max-h-96 overflow-y-auto">
+              {messages.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No messages yet</p>
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`p-4 rounded-lg ${
+                      message.sender_id === user?.id
+                        ? "bg-primary/10 ml-8"
+                        : "bg-muted mr-8"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="font-semibold text-sm">{message.profiles.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(message.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    <p className="text-foreground">{message.message}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Textarea
+                placeholder="Type your message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                className="flex-1"
+                rows={2}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || sendingMessage}
+                size="icon"
+                className="self-end"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {complaint.status === "resolved" && !complaint.rating && (
           <Card>
             <CardHeader>
-              <CardTitle>Admin Replies</CardTitle>
+              <CardTitle>Rate This Resolution</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {replies.map((reply) => (
-                  <div key={reply.id} className="p-4 bg-muted rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <p className="font-semibold text-sm">{reply.profiles.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(reply.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                    <p className="text-foreground">{reply.message}</p>
-                  </div>
+                <div className="flex gap-2 justify-center">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setRating(star)}
+                      className="transition-all hover:scale-110"
+                    >
+                      <Star
+                        className={`h-8 w-8 ${
+                          star <= rating
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <Textarea
+                  placeholder="Share your feedback (optional)"
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  rows={3}
+                />
+                <Button
+                  onClick={handleSubmitRating}
+                  disabled={rating === 0 || submittingRating}
+                  className="w-full"
+                >
+                  Submit Rating
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {complaint.rating && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Feedback</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-1 mb-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`h-5 w-5 ${
+                      star <= complaint.rating!
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-muted-foreground"
+                    }`}
+                  />
                 ))}
               </div>
+              {complaint.feedback && (
+                <p className="text-foreground">{complaint.feedback}</p>
+              )}
             </CardContent>
           </Card>
         )}

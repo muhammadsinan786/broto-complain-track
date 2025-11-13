@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/StatusBadge";
+import { PriorityBadge } from "@/components/PriorityBadge";
 import { Plus, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ interface Complaint {
   title: string;
   description: string;
   category: "academic" | "infrastructure" | "technical" | "administrative" | "other";
+  priority: "low" | "medium" | "high";
   status: "pending" | "in_progress" | "resolved";
   created_at: string;
 }
@@ -102,6 +104,7 @@ const StudentDashboard = () => {
                         <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary capitalize">
                           {complaint.category}
                         </span>
+                        <PriorityBadge priority={complaint.priority} />
                       </div>
                       <CardDescription className="line-clamp-2">
                         {complaint.description}
