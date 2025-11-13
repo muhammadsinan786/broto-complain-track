@@ -185,6 +185,40 @@ const AdminComplaintDetail = () => {
     }
   };
 
+  const handleCategoryUpdate = async (newCategory: "academic" | "infrastructure" | "technical" | "administrative" | "other") => {
+    try {
+      const { error } = await supabase
+        .from("complaints")
+        .update({ category: newCategory })
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      setComplaint((prev) => prev ? { ...prev, category: newCategory } : null);
+      toast.success("Category updated successfully");
+    } catch (error) {
+      console.error("Error updating category:", error);
+      toast.error("Failed to update category");
+    }
+  };
+
+  const handlePriorityUpdate = async (newPriority: "low" | "medium" | "high") => {
+    try {
+      const { error } = await supabase
+        .from("complaints")
+        .update({ priority: newPriority })
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      setComplaint((prev) => prev ? { ...prev, priority: newPriority } : null);
+      toast.success("Priority updated successfully");
+    } catch (error) {
+      console.error("Error updating priority:", error);
+      toast.error("Failed to update priority");
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!complaint || !user) return;
 
@@ -278,19 +312,57 @@ const AdminComplaintDetail = () => {
                 <p className="text-sm text-muted-foreground">
                   Submitted {new Date(complaint.created_at).toLocaleDateString()}
                 </p>
+                {complaint.updated_at !== complaint.created_at && (
+                  <p className="text-xs text-muted-foreground">
+                    Last edited {new Date(complaint.updated_at).toLocaleDateString()}
+                  </p>
+                )}
               </div>
               <div className="flex flex-col items-start md:items-end gap-3">
                 <StatusBadge status={complaint.status} />
-                <Select value={complaint.status} onValueChange={handleStatusUpdate}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2 w-full md:w-auto">
+                  <div>
+                    <Label className="text-xs mb-1">Status</Label>
+                    <Select value={complaint.status} onValueChange={handleStatusUpdate}>
+                      <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="resolved">Resolved</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs mb-1">Category</Label>
+                    <Select value={complaint.category} onValueChange={handleCategoryUpdate}>
+                      <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="academic">Academic</SelectItem>
+                        <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                        <SelectItem value="technical">Technical</SelectItem>
+                        <SelectItem value="administrative">Administrative</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs mb-1">Priority</Label>
+                    <Select value={complaint.priority} onValueChange={handlePriorityUpdate}>
+                      <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             </div>
           </CardHeader>

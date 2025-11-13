@@ -9,6 +9,8 @@ import Auth from "./pages/Auth";
 import StudentDashboard from "./pages/StudentDashboard";
 import NewComplaint from "./pages/NewComplaint";
 import ComplaintDetail from "./pages/ComplaintDetail";
+import EditComplaint from "./pages/EditComplaint";
+import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminComplaintDetail from "./pages/AdminComplaintDetail";
 import NotFound from "./pages/NotFound";
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/student/new" element={<NewComplaint />} />
             <Route path="/student/complaint/:id" element={<ComplaintDetail />} />
+            <Route path="/student/complaint/:id/edit" element={<EditComplaint />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/complaint/:id" element={<AdminComplaintDetail />} />
             <Route path="*" element={<NotFound />} />

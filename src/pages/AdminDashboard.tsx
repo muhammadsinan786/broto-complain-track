@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBadge } from "@/components/StatusBadge";
 import { PriorityBadge } from "@/components/PriorityBadge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogOut, TrendingUp, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { LogOut, TrendingUp, Clock, CheckCircle, AlertCircle, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -149,10 +149,16 @@ const AdminDashboard = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">Admin Dashboard</h1>
             <p className="text-muted-foreground mt-2">Manage and respond to student complaints</p>
           </div>
-          <Button onClick={signOut} variant="outline" size="lg">
-            <LogOut className="mr-2 h-5 w-5" />
-            Logout
-          </Button>
+          <div className="flex gap-3">
+            <Button onClick={() => navigate("/profile")} variant="outline" size="lg">
+              <User className="mr-2 h-5 w-5" />
+              Profile
+            </Button>
+            <Button onClick={signOut} variant="outline" size="lg">
+              <LogOut className="mr-2 h-5 w-5" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

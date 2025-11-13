@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PriorityBadge } from "@/components/PriorityBadge";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, Edit, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { DeleteComplaintDialog } from "@/components/DeleteComplaintDialog";
 
 interface Complaint {
   id: string;
@@ -17,6 +18,7 @@ interface Complaint {
   priority: "low" | "medium" | "high";
   status: "pending" | "in_progress" | "resolved";
   created_at: string;
+  updated_at: string;
 }
 
 const StudentDashboard = () => {
@@ -71,6 +73,10 @@ const StudentDashboard = () => {
               <Plus className="mr-2 h-5 w-5" />
               New Complaint
             </Button>
+            <Button onClick={() => navigate("/profile")} variant="outline" size="lg">
+              <User className="mr-2 h-5 w-5" />
+              Profile
+            </Button>
             <Button onClick={signOut} variant="outline" size="lg">
               <LogOut className="mr-2 h-5 w-5" />
               Logout
@@ -93,12 +99,14 @@ const StudentDashboard = () => {
             {complaints.map((complaint) => (
               <Card
                 key={complaint.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => navigate(`/student/complaint/${complaint.id}`)}
+                className="hover:shadow-lg transition-shadow"
               >
                 <CardHeader>
                   <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                    <div className="flex-1">
+                    <div 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => navigate(`/student/complaint/${complaint.id}`)}
+                    >
                       <CardTitle className="text-xl mb-2">{complaint.title}</CardTitle>
                       <div className="flex flex-wrap gap-2 mb-2">
                         <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary capitalize">
@@ -114,9 +122,33 @@ const StudentDashboard = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Submitted {new Date(complaint.created_at).toLocaleDateString()}
-                  </p>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>Submitted {new Date(complaint.created_at).toLocaleDateString()}</p>
+                      {complaint.updated_at !== complaint.created_at && (
+                        <p className="text-xs">
+                          Last edited {new Date(complaint.updated_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    {complaint.status === "pending" && (
+                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/student/complaint/${complaint.id}/edit`)}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </Button>
+                        <DeleteComplaintDialog
+                          complaintId={complaint.id}
+                          userId={user?.id!}
+                          onDeleted={fetchComplaints}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}

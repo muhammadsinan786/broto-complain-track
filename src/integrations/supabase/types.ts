@@ -38,6 +38,36 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       complaint_attachments: {
         Row: {
           complaint_id: string
@@ -139,6 +169,8 @@ export type Database = {
           assigned_admin_id: string | null
           category: Database["public"]["Enums"]["complaint_category"]
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string
           feedback: string | null
           id: string
@@ -154,6 +186,8 @@ export type Database = {
           assigned_admin_id?: string | null
           category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description: string
           feedback?: string | null
           id?: string
@@ -169,6 +203,8 @@ export type Database = {
           assigned_admin_id?: string | null
           category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string
           feedback?: string | null
           id?: string
@@ -184,24 +220,30 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           email: string
           id: string
           name: string
+          phone: string | null
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           email: string
           id: string
           name: string
+          phone?: string | null
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           email?: string
           id?: string
           name?: string
+          phone?: string | null
           updated_at?: string
         }
         Relationships: []
