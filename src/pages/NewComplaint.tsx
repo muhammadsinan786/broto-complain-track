@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { complaintSchema, validateFiles } from "@/lib/validations";
 
 const NewComplaint = () => {
   const { user } = useAuth();
@@ -25,8 +26,30 @@ const NewComplaint = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !title.trim() || !description.trim()) {
-      toast.error("Please fill in all required fields");
+    if (!user) {
+      toast.error("You must be logged in to submit a complaint");
+      return;
+    }
+
+    // Validate form data
+    const validation = complaintSchema.safeParse({
+      title: title.trim(),
+      description: description.trim(),
+      category,
+      priority,
+      is_anonymous: isAnonymous
+    });
+
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => e.message).join(", ");
+      toast.error(errors);
+      return;
+    }
+
+    // Validate files
+    const fileValidation = validateFiles(files);
+    if (!fileValidation.valid) {
+      toast.error(fileValidation.error);
       return;
     }
 

@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { PriorityBadge } from "@/components/PriorityBadge";
 import { ArrowLeft, Download, Send, Star } from "lucide-react";
 import { toast } from "sonner";
+import { messageSchema } from "@/lib/validations";
 
 interface Complaint {
   id: string;
@@ -185,7 +186,14 @@ const AdminComplaintDetail = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user) return;
+    if (!complaint || !user) return;
+
+    const validation = messageSchema.safeParse({ message: newMessage });
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => e.message).join(", ");
+      toast.error(errors);
+      return;
+    }
 
     setSubmitting(true);
     try {

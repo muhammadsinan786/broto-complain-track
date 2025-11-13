@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { PriorityBadge } from "@/components/PriorityBadge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { messageSchema, ratingSchema } from "@/lib/validations";
 
 interface Complaint {
   id: string;
@@ -135,7 +136,14 @@ const ComplaintDetail = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user) return;
+    if (!complaint || !user) return;
+
+    const validation = messageSchema.safeParse({ message: newMessage });
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => e.message).join(", ");
+      toast.error(errors);
+      return;
+    }
 
     setSendingMessage(true);
     try {
@@ -161,7 +169,14 @@ const ComplaintDetail = () => {
   };
 
   const handleSubmitRating = async () => {
-    if (rating === 0 || !user) return;
+    if (!user) return;
+
+    const validation = ratingSchema.safeParse({ rating, feedback });
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => e.message).join(", ");
+      toast.error(errors);
+      return;
+    }
 
     setSubmittingRating(true);
     try {

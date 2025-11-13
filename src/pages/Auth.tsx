@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { signUpSchema, signInSchema } from "@/lib/validations";
 
 const Auth = () => {
   const [name, setName] = useState("");
@@ -27,14 +29,19 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !password.trim()) {
+    
+    const validation = signUpSchema.safeParse({ name, email, password });
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => e.message).join(", ");
+      toast.error(errors);
       return;
     }
+    
     setIsLoading(true);
     try {
       await signUp(name, email, password);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred during sign up");
     } finally {
       setIsLoading(false);
     }
@@ -42,14 +49,19 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
+    
+    const validation = signInSchema.safeParse({ email, password });
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => e.message).join(", ");
+      toast.error(errors);
       return;
     }
+    
     setIsLoading(true);
     try {
       await signIn(email, password);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred during sign in");
     } finally {
       setIsLoading(false);
     }
