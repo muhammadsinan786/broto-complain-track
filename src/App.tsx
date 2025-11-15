@@ -14,6 +14,12 @@ import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminComplaintDetail from "./pages/AdminComplaintDetail";
 import NotFound from "./pages/NotFound";
+import Trash from "./pages/Trash";
+import Analytics from "./pages/Analytics";
+import Feedback from "./pages/Feedback";
+import FeedbackManagement from "./pages/FeedbackManagement";
+import Announcements from "./pages/Announcements";
+import AnnouncementManagement from "./pages/AnnouncementManagement";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +40,12 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/complaint/:id" element={<AdminComplaintDetail />} />
+            <Route path="/trash" element={<Trash />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/feedback-management" element={<FeedbackManagement />} />
+            <Route path="/announcements" element={<Announcements />} />
+            <Route path="/announcement-management" element={<AnnouncementManagement />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LogOut, TrendingUp, Clock, CheckCircle, AlertCircle, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface Complaint {
   id: string;
@@ -73,6 +74,7 @@ const AdminDashboard = () => {
       const { data, error } = await supabase
         .from("complaints")
         .select("*")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -149,7 +151,20 @@ const AdminDashboard = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">Admin Dashboard</h1>
             <p className="text-muted-foreground mt-2">Manage and respond to student complaints</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap items-center">
+            <NotificationBell />
+            <Button onClick={() => navigate("/analytics")} variant="outline" size="lg">
+              Analytics
+            </Button>
+            <Button onClick={() => navigate("/trash")} variant="outline" size="lg">
+              Trash
+            </Button>
+            <Button onClick={() => navigate("/feedback-management")} variant="outline" size="lg">
+              Feedback
+            </Button>
+            <Button onClick={() => navigate("/announcement-management")} variant="outline" size="lg">
+              Announcements
+            </Button>
             <Button onClick={() => navigate("/profile")} variant="outline" size="lg">
               <User className="mr-2 h-5 w-5" />
               Profile

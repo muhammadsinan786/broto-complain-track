@@ -110,9 +110,33 @@ const ComplaintDetail = () => {
 
       if (messagesError) throw messagesError;
       
-      // Fetch sender profiles for messages
+      // Fetch sender profiles for messages with anonymous handling
       const messagesWithProfiles = await Promise.all(
         (messagesData || []).map(async (message) => {
+          // For anonymous complaints, hide admin identity
+          if (complaintData.is_anonymous) {
+            const isCurrentUser = message.sender_id === user?.id;
+            if (isCurrentUser) {
+              // Student sees their own name
+              const { data: senderProfile } = await supabase
+                .from("profiles")
+                .select("name")
+                .eq("id", message.sender_id)
+                .maybeSingle();
+              return {
+                ...message,
+                profiles: senderProfile || { name: "You" },
+              };
+            } else {
+              // Admin messages show as "Admin"
+              return {
+                ...message,
+                profiles: { name: "Admin" },
+              };
+            }
+          }
+          
+          // For non-anonymous complaints, fetch real profiles
           const { data: senderProfile } = await supabase
             .from("profiles")
             .select("name")

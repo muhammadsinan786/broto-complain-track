@@ -38,6 +38,39 @@ export type Database = {
         }
         Relationships: []
       }
+      announcements: {
+        Row: {
+          admin_id: string
+          attachment_url: string | null
+          created_at: string | null
+          expiry_date: string | null
+          id: string
+          message: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_id: string
+          attachment_url?: string | null
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string
+          message: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_id?: string
+          attachment_url?: string | null
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string
+          message?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -215,6 +248,99 @@ export type Database = {
           student_id?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          id: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      internal_notes: {
+        Row: {
+          admin_id: string
+          complaint_id: string
+          created_at: string | null
+          id: string
+          note: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_id: string
+          complaint_id: string
+          created_at?: string | null
+          id?: string
+          note: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_id?: string
+          complaint_id?: string
+          created_at?: string | null
+          id?: string
+          note?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
