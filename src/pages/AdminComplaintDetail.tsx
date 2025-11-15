@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PriorityBadge } from "@/components/PriorityBadge";
-import { ArrowLeft, Download, Send, Star } from "lucide-react";
+import { ArrowLeft, Download, Send, Star, StickyNote } from "lucide-react";
 import { toast } from "sonner";
 import { messageSchema } from "@/lib/validations";
 
@@ -55,6 +55,16 @@ interface Message {
   };
 }
 
+interface InternalNote {
+  id: string;
+  note: string;
+  created_at: string;
+  admin_id: string;
+  profiles?: {
+    name: string;
+  };
+}
+
 const AdminComplaintDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -67,6 +77,8 @@ const AdminComplaintDetail = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [internalNotes, setInternalNotes] = useState<InternalNote[]>([]);
+  const [newNote, setNewNote] = useState("");
 
   useEffect(() => {
     if (!user || userRole !== "admin") {
@@ -136,9 +148,19 @@ const AdminComplaintDetail = () => {
 
       if (messagesError) throw messagesError;
       
-      // Fetch sender profiles for messages
+      // Fetch sender profiles for messages with anonymous handling
       const messagesWithProfiles = await Promise.all(
         (messagesData || []).map(async (message) => {
+          // For anonymous complaints, hide real identities
+          if (complaintData.is_anonymous) {
+            const isStudent = message.sender_id === complaintData.student_id;
+            return {
+              ...message,
+              profiles: { name: isStudent ? "Anonymous User" : "Admin" },
+            };
+          }
+          
+          // For non-anonymous complaints, fetch real profiles
           const { data: senderProfile } = await supabase
             .from("profiles")
             .select("name")
@@ -160,6 +182,31 @@ const AdminComplaintDetail = () => {
         .select("*");
       
       setTemplates(templatesData || []);
+
+      // Fetch internal notes
+      const { data: notesData } = await supabase
+        .from("internal_notes")
+        .select("*")
+        .eq("complaint_id", id)
+        .order("created_at", { ascending: false });
+
+      if (notesData) {
+        const notesWithProfiles = await Promise.all(
+          notesData.map(async (note) => {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("name")
+              .eq("id", note.admin_id)
+              .maybeSingle();
+            
+            return {
+              ...note,
+              profiles: profile || { name: "Admin" },
+            };
+          })
+        );
+        setInternalNotes(notesWithProfiles);
+      }
     } catch (error) {
       console.error("Error fetching complaint details:", error);
       toast.error("Failed to load complaint details");
@@ -216,6 +263,29 @@ const AdminComplaintDetail = () => {
     } catch (error) {
       console.error("Error updating priority:", error);
       toast.error("Failed to update priority");
+    }
+  };
+
+  const handleAddNote = async () => {
+    if (!newNote.trim() || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from("internal_notes")
+        .insert({
+          complaint_id: id,
+          admin_id: user.id,
+          note: newNote,
+        });
+
+      if (error) throw error;
+
+      setNewNote("");
+      fetchComplaintDetails();
+      toast.success("Note added");
+    } catch (error) {
+      console.error("Error adding note:", error);
+      toast.error("Failed to add note");
     }
   };
 
@@ -458,6 +528,51 @@ const AdminComplaintDetail = () => {
               <Button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || submitting}
+                size="icon"
+                className="self-end"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <StickyNote className="h-5 w-5" />
+              Internal Notes (Admin Only)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 mb-4 max-h-80 overflow-y-auto">
+              {internalNotes.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No internal notes yet</p>
+              ) : (
+                internalNotes.map((note) => (
+                  <div key={note.id} className="p-4 rounded-lg bg-muted">
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="font-semibold text-sm">{note.profiles?.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(note.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    <p className="text-foreground whitespace-pre-wrap">{note.note}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Textarea
+                placeholder="Add internal note (only visible to admins)..."
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                className="flex-1"
+                rows={2}
+              />
+              <Button
+                onClick={handleAddNote}
+                disabled={!newNote.trim()}
                 size="icon"
                 className="self-end"
               >

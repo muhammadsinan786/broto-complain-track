@@ -9,6 +9,7 @@ import { Plus, LogOut, Edit, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { DeleteComplaintDialog } from "@/components/DeleteComplaintDialog";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface Complaint {
   id: string;
@@ -68,10 +69,20 @@ const StudentDashboard = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">My Complaints</h1>
             <p className="text-muted-foreground mt-2">Track and manage your submitted complaints</p>
           </div>
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-3 flex-wrap items-center">
+            <NotificationBell />
             <Button onClick={() => navigate("/student/new")} size="lg" className="flex-1 md:flex-none">
               <Plus className="mr-2 h-5 w-5" />
               New Complaint
+            </Button>
+            <Button onClick={() => navigate("/feedback")} variant="outline" size="lg">
+              Feedback
+            </Button>
+            <Button onClick={() => navigate("/announcements")} variant="outline" size="lg">
+              Announcements
+            </Button>
+            <Button onClick={() => navigate("/trash")} variant="outline" size="lg">
+              Trash
             </Button>
             <Button onClick={() => navigate("/profile")} variant="outline" size="lg">
               <User className="mr-2 h-5 w-5" />
