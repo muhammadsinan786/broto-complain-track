@@ -55,8 +55,7 @@ export default function Analytics() {
   const fetchAnalytics = async () => {
     const { data: complaints, error } = await supabase
       .from("complaints")
-      .select("*")
-      .is("deleted_at", null);
+      .select("*");
 
     if (error) {
       console.error("Error fetching analytics:", error);

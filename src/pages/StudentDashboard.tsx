@@ -81,9 +81,6 @@ const StudentDashboard = () => {
             <Button onClick={() => navigate("/announcements")} variant="outline" size="lg">
               Announcements
             </Button>
-            <Button onClick={() => navigate("/trash")} variant="outline" size="lg">
-              Trash
-            </Button>
             <Button onClick={() => navigate("/profile")} variant="outline" size="lg">
               <User className="mr-2 h-5 w-5" />
               Profile

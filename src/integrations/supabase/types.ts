@@ -202,8 +202,6 @@ export type Database = {
           assigned_admin_id: string | null
           category: Database["public"]["Enums"]["complaint_category"]
           created_at: string
-          deleted_at: string | null
-          deleted_by: string | null
           description: string
           feedback: string | null
           id: string
@@ -219,8 +217,6 @@ export type Database = {
           assigned_admin_id?: string | null
           category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
-          deleted_at?: string | null
-          deleted_by?: string | null
           description: string
           feedback?: string | null
           id?: string
@@ -236,8 +232,6 @@ export type Database = {
           assigned_admin_id?: string | null
           category?: Database["public"]["Enums"]["complaint_category"]
           created_at?: string
-          deleted_at?: string | null
-          deleted_by?: string | null
           description?: string
           feedback?: string | null
           id?: string

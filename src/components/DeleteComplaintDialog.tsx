@@ -27,16 +27,13 @@ export const DeleteComplaintDialog = ({ complaintId, userId, onDeleted }: Delete
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      // Soft delete the complaint
-      const { error: updateError } = await supabase
+      // Permanently delete the complaint
+      const { error: deleteError } = await supabase
         .from("complaints")
-        .update({
-          deleted_at: new Date().toISOString(),
-          deleted_by: userId,
-        })
+        .delete()
         .eq("id", complaintId);
 
-      if (updateError) throw updateError;
+      if (deleteError) throw deleteError;
 
       // Log the deletion
       await supabase.from("audit_logs").insert({
@@ -47,7 +44,7 @@ export const DeleteComplaintDialog = ({ complaintId, userId, onDeleted }: Delete
         details: { reason: "user_requested" }
       });
 
-      toast.success("Complaint moved to trash");
+      toast.success("Complaint deleted successfully");
       onDeleted();
     } catch (error: any) {
       console.error("Error deleting complaint:", error);
@@ -69,7 +66,7 @@ export const DeleteComplaintDialog = ({ complaintId, userId, onDeleted }: Delete
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will move your complaint to trash. This action cannot be undone. The complaint will be permanently removed after 30 days.
+            This will permanently delete your complaint. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
