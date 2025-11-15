@@ -137,13 +137,10 @@ const Profile = () => {
         return;
       }
 
-      // Soft delete all user's complaints
+      // Permanently delete all user's complaints
       const { error: complaintsError } = await supabase
         .from("complaints")
-        .update({ 
-          deleted_at: new Date().toISOString(),
-          deleted_by: user?.id 
-        })
+        .delete()
         .eq("student_id", user?.id);
 
       if (complaintsError) throw complaintsError;

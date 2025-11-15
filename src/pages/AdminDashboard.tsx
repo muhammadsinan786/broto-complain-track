@@ -74,7 +74,6 @@ const AdminDashboard = () => {
       const { data, error } = await supabase
         .from("complaints")
         .select("*")
-        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -155,9 +154,6 @@ const AdminDashboard = () => {
             <NotificationBell />
             <Button onClick={() => navigate("/analytics")} variant="outline" size="lg">
               Analytics
-            </Button>
-            <Button onClick={() => navigate("/trash")} variant="outline" size="lg">
-              Trash
             </Button>
             <Button onClick={() => navigate("/feedback-management")} variant="outline" size="lg">
               Feedback
