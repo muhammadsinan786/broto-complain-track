@@ -1,17 +1,20 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Trash2, Save } from "lucide-react";
+import { ArrowLeft, Trash2, Save, Sun, Moon, Monitor, Calendar, Star, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
 const Profile = () => {
   const { user, signOut, userRole } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -24,6 +27,7 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
+  const [stats, setStats] = useState({ total: 0, resolved: 0, avgRating: 0, joinedDate: "" });
 
   useEffect(() => {
     if (!user) {
@@ -46,6 +50,27 @@ const Profile = () => {
       setName(data.name || "");
       setEmail(data.email || "");
       setPhone(data.phone || "");
+      
+      // Fetch complaint stats
+      const { data: complaints } = await supabase
+        .from("complaints")
+        .select("status, rating, created_at")
+        .eq("student_id", user?.id);
+
+      if (complaints) {
+        const resolved = complaints.filter(c => c.status === "resolved").length;
+        const ratings = complaints.filter(c => c.rating).map(c => c.rating!);
+        const avgRating = ratings.length > 0 
+          ? ratings.reduce((a, b) => a + b, 0) / ratings.length 
+          : 0;
+
+        setStats({
+          total: complaints.length,
+          resolved,
+          avgRating,
+          joinedDate: data.created_at,
+        });
+      }
     } catch (error) {
       console.error("Error fetching profile:", error);
       toast.error("Failed to load profile");
@@ -191,7 +216,68 @@ const Profile = () => {
         </Button>
 
         <div className="space-y-6">
-          <Card>
+          {/* Profile Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="animate-fade-in">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.total}</p>
+                    <p className="text-sm text-muted-foreground">Total Complaints</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-green-500/10">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.resolved}</p>
+                    <p className="text-sm text-muted-foreground">Resolved</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-yellow-500/10">
+                    <Star className="h-5 w-5 text-yellow-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.avgRating.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground">Avg Rating</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-blue-500/10">
+                    <Calendar className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Joined</p>
+                    <p className="text-xs text-muted-foreground">
+                      {stats.joinedDate && formatDistanceToNow(new Date(stats.joinedDate), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="animate-slide-up">
             <CardHeader>
               <CardTitle className="text-2xl">Edit Profile</CardTitle>
               <CardDescription>Update your personal information</CardDescription>
@@ -230,6 +316,39 @@ const Profile = () => {
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Your phone number"
                   />
+                </div>
+
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Theme Preference</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Button
+                      type="button"
+                      variant={theme === "light" ? "default" : "outline"}
+                      onClick={() => setTheme("light")}
+                      className="flex flex-col gap-2 h-auto py-3"
+                    >
+                      <Sun className="h-5 w-5" />
+                      <span className="text-xs">Light</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={theme === "dark" ? "default" : "outline"}
+                      onClick={() => setTheme("dark")}
+                      className="flex flex-col gap-2 h-auto py-3"
+                    >
+                      <Moon className="h-5 w-5" />
+                      <span className="text-xs">Dark</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={theme === "system" ? "default" : "outline"}
+                      onClick={() => setTheme("system")}
+                      className="flex flex-col gap-2 h-auto py-3"
+                    >
+                      <Monitor className="h-5 w-5" />
+                      <span className="text-xs">System</span>
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="border-t pt-6">
