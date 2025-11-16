@@ -19,6 +19,7 @@ import Feedback from "./pages/Feedback";
 import FeedbackManagement from "./pages/FeedbackManagement";
 import Announcements from "./pages/Announcements";
 import AnnouncementManagement from "./pages/AnnouncementManagement";
+import Notifications from "./pages/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/student/complaint/:id" element={<ComplaintDetail />} />
             <Route path="/student/complaint/:id/edit" element={<EditComplaint />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/complaint/:id" element={<AdminComplaintDetail />} />
             <Route path="/analytics" element={<Analytics />} />

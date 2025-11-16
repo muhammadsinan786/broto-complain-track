@@ -5,12 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/StatusBadge";
-import { ArrowLeft, Download, Send, Star } from "lucide-react";
+import { ArrowLeft, Download, Send, Star, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { PriorityBadge } from "@/components/PriorityBadge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { messageSchema, ratingSchema } from "@/lib/validations";
+import { ComplaintTimeline } from "@/components/ComplaintTimeline";
+import { formatDistanceToNow } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Complaint {
   id: string;
@@ -238,7 +241,7 @@ const ComplaintDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-4 md:p-6 animate-fade-in">
       <div className="container mx-auto max-w-5xl">
         <Button
           variant="ghost"
@@ -249,7 +252,9 @@ const ComplaintDetail = () => {
           Back to Dashboard
         </Button>
 
-        <Card className="mb-6">
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="animate-scale-in">
           <CardHeader>
             <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
               <div className="flex-1">
@@ -301,6 +306,13 @@ const ComplaintDetail = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {messages.length > 0 && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground pt-4 border-t">
+                  <Clock className="h-4 w-4" />
+                  <span>Admin last active {formatDistanceToNow(new Date(messages[messages.length - 1].created_at), { addSuffix: true })}</span>
                 </div>
               )}
             </div>
@@ -422,6 +434,21 @@ const ComplaintDetail = () => {
             </CardContent>
           </Card>
         )}
+          </div>
+
+          {/* Timeline Sidebar */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-6 animate-slide-up">
+              <CardContent className="pt-6">
+                <ComplaintTimeline
+                  complaint={complaint}
+                  hasAdminViewed={messages.length > 0}
+                  hasAdminReplied={messages.some(m => m.sender_id !== user?.id)}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

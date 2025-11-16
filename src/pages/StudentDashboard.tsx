@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusBadge } from "@/components/StatusBadge";
-import { PriorityBadge } from "@/components/PriorityBadge";
-import { Plus, LogOut, Edit, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { DeleteComplaintDialog } from "@/components/DeleteComplaintDialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ComplaintCard } from "@/components/ComplaintCard";
+import { ComplaintCardSkeleton } from "@/components/ComplaintCardSkeleton";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { DesktopHeader } from "@/components/DesktopHeader";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 interface Complaint {
   id: string;
@@ -23,7 +24,7 @@ interface Complaint {
 }
 
 const StudentDashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const StudentDashboard = () => {
       const { data, error } = await supabase
         .from("complaints")
         .select("*")
+        .eq("student_id", user?.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -53,47 +55,39 @@ const StudentDashboard = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10">
-      <div className="container mx-auto p-4 md:p-6 max-w-6xl">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+      <DesktopHeader />
+      <div className="container mx-auto p-4 md:p-6 max-w-7xl pb-20 md:pb-6">
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">My Complaints</h1>
-            <p className="text-muted-foreground mt-2">Track and manage your submitted complaints</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Student Dashboard</h1>
+            <p className="text-muted-foreground">Track and manage your complaints</p>
           </div>
-          <div className="flex gap-3 flex-wrap items-center">
+          <div className="md:hidden flex items-center gap-2">
             <NotificationBell />
-            <Button onClick={() => navigate("/student/new")} size="lg" className="flex-1 md:flex-none">
+            <Button onClick={() => navigate("/student/new")} size="lg">
               <Plus className="mr-2 h-5 w-5" />
-              New Complaint
-            </Button>
-            <Button onClick={() => navigate("/feedback")} variant="outline" size="lg">
-              Feedback
-            </Button>
-            <Button onClick={() => navigate("/announcements")} variant="outline" size="lg">
-              Announcements
-            </Button>
-            <Button onClick={() => navigate("/profile")} variant="outline" size="lg">
-              <User className="mr-2 h-5 w-5" />
-              Profile
-            </Button>
-            <Button onClick={signOut} variant="outline" size="lg">
-              <LogOut className="mr-2 h-5 w-5" />
-              Logout
+              New
             </Button>
           </div>
         </div>
 
-        {complaints.length === 0 ? (
-          <Card>
+        <div className="hidden md:flex justify-end gap-2 mb-6">
+          <Button onClick={() => navigate("/student/new")} size="lg">
+            <Plus className="mr-2 h-5 w-5" />
+            New Complaint
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="grid gap-4">
+            <ComplaintCardSkeleton />
+            <ComplaintCardSkeleton />
+            <ComplaintCardSkeleton />
+          </div>
+        ) : complaints.length === 0 ? (
+          <Card className="animate-scale-in">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <p className="text-muted-foreground mb-4">No complaints submitted yet</p>
               <Button onClick={() => navigate("/student/new")}>
@@ -104,65 +98,21 @@ const StudentDashboard = () => {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {complaints.map((complaint) => (
-              <Card
-                key={complaint.id}
-                className="hover:shadow-lg transition-shadow"
-              >
-                <CardHeader>
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
-                    <div 
-                      className="flex-1 cursor-pointer"
-                      onClick={() => navigate(`/student/complaint/${complaint.id}`)}
-                    >
-                      <CardTitle className="text-xl mb-2">{complaint.title}</CardTitle>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary capitalize">
-                          {complaint.category}
-                        </span>
-                        <PriorityBadge priority={complaint.priority} />
-                      </div>
-                      <CardDescription className="line-clamp-2">
-                        {complaint.description}
-                      </CardDescription>
-                    </div>
-                    <StatusBadge status={complaint.status} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>Submitted {new Date(complaint.created_at).toLocaleDateString()}</p>
-                      {complaint.updated_at !== complaint.created_at && (
-                        <p className="text-xs">
-                          Last edited {new Date(complaint.updated_at).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                    {complaint.status === "pending" && (
-                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/student/complaint/${complaint.id}/edit`)}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </Button>
-                        <DeleteComplaintDialog
-                          complaintId={complaint.id}
-                          userId={user?.id!}
-                          onDeleted={fetchComplaints}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+            {complaints.map((complaint, index) => (
+              <div key={complaint.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <ComplaintCard
+                  complaint={complaint}
+                  userId={user?.id!}
+                  onView={(id) => navigate(`/student/complaint/${id}`)}
+                  onEdit={(id) => navigate(`/student/complaint/${id}/edit`)}
+                  onDelete={fetchComplaints}
+                />
+              </div>
             ))}
           </div>
         )}
       </div>
+      <MobileBottomNav />
     </div>
   );
 };
