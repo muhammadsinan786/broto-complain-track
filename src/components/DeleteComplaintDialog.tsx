@@ -27,7 +27,26 @@ export const DeleteComplaintDialog = ({ complaintId, userId, onDeleted }: Delete
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      // Permanently delete the complaint
+      // First get all attachments for this complaint
+      const { data: attachments } = await supabase
+        .from("complaint_attachments")
+        .select("file_url")
+        .eq("complaint_id", complaintId);
+
+      // Delete all files from storage
+      if (attachments && attachments.length > 0) {
+        const filePaths = attachments
+          .map(att => att.file_url.split('/').pop())
+          .filter((path): path is string => !!path);
+        
+        if (filePaths.length > 0) {
+          await supabase.storage
+            .from("complaint-attachments")
+            .remove(filePaths);
+        }
+      }
+
+      // Permanently delete the complaint (CASCADE will delete attachments)
       const { error: deleteError } = await supabase
         .from("complaints")
         .delete()

@@ -72,6 +72,26 @@ const EditComplaint = () => {
 
   const removeExistingAttachment = async (attachmentId: string) => {
     try {
+      // First get the attachment to find the file URL
+      const { data: attachment, error: fetchError } = await supabase
+        .from("complaint_attachments")
+        .select("file_url")
+        .eq("id", attachmentId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Delete the file from storage
+      if (attachment?.file_url) {
+        const filePath = attachment.file_url.split('/').pop();
+        if (filePath) {
+          await supabase.storage
+            .from("complaint-attachments")
+            .remove([filePath]);
+        }
+      }
+
+      // Then delete the database record
       const { error } = await supabase
         .from("complaint_attachments")
         .delete()
