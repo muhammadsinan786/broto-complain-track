@@ -115,6 +115,24 @@ const Profile = () => {
           return;
         }
 
+        if (!currentPassword) {
+          toast.error("Please enter your current password to change it");
+          setSaving(false);
+          return;
+        }
+
+        // Verify current password before allowing change
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: currentPassword,
+        });
+
+        if (signInError) {
+          toast.error("Current password is incorrect");
+          setSaving(false);
+          return;
+        }
+
         const { error: passwordError } = await supabase.auth.updateUser({
           password: newPassword
         });
@@ -355,6 +373,18 @@ const Profile = () => {
                   <h3 className="text-lg font-semibold mb-4">Change Password (Optional)</h3>
                   
                   <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword">Current Password *</Label>
+                      <Input
+                        id="currentPassword"
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter current password"
+                      />
+                      <p className="text-xs text-muted-foreground">Required to change password</p>
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="newPassword">New Password</Label>
                       <Input
