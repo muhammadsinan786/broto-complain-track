@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Send } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { feedbackSchema } from "@/lib/validations";
 
 export default function Feedback() {
   const navigate = useNavigate();
@@ -20,10 +21,12 @@ export default function Feedback() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !description || !category) {
+    // Validate input using Zod schema
+    const validation = feedbackSchema.safeParse({ title, description, category });
+    if (!validation.success) {
       toast({
-        title: "Error",
-        description: "Please fill in all fields",
+        title: "Validation Error",
+        description: validation.error.errors[0].message,
         variant: "destructive",
       });
       return;
@@ -41,9 +44,9 @@ export default function Feedback() {
       .from("feedback")
       .insert({
         user_id: user.id,
-        title,
-        description,
-        category,
+        title: validation.data.title,
+        description: validation.data.description,
+        category: validation.data.category,
       });
 
     if (error) {
@@ -96,9 +99,10 @@ export default function Feedback() {
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
-                  placeholder="Brief summary of your feedback"
+                  placeholder="Brief summary of your feedback (5-200 characters)"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  maxLength={200}
                   required
                 />
               </div>
@@ -121,10 +125,11 @@ export default function Feedback() {
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  placeholder="Provide detailed information about your feedback"
+                  placeholder="Provide detailed information about your feedback (10-2000 characters)"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={6}
+                  maxLength={2000}
                   required
                 />
               </div>
