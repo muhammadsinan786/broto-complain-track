@@ -106,8 +106,8 @@ const NewComplaint = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-4 md:p-6">
-      <div className="container mx-auto max-w-3xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-6">
+      <div className="container mx-auto max-w-3xl animate-fade-in">
         <Button
           variant="ghost"
           onClick={() => navigate("/student")}
@@ -117,9 +117,9 @@ const NewComplaint = () => {
           Back to Dashboard
         </Button>
 
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-3xl">Submit New Complaint</CardTitle>
+            <CardTitle className="text-2xl md:text-3xl">Submit New Complaint</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">

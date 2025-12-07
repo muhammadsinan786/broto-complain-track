@@ -11,7 +11,7 @@ const Notifications = () => {
   const { userRole } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <DesktopHeader />
       <div className="container mx-auto p-4 md:p-6 max-w-4xl pb-20 md:pb-6">
         <Button

@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { FormattedText } from "@/components/FormattedText";
 
 interface Announcement {
   id: string;
@@ -147,19 +148,19 @@ export default function AnnouncementManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
+      <div className="max-w-4xl mx-auto animate-fade-in">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Announcement Management</h1>
-              <p className="text-muted-foreground">Create and manage announcements</p>
+              <h1 className="text-2xl md:text-3xl font-bold">Announcement Management</h1>
+              <p className="text-muted-foreground text-sm md:text-base">Create and manage announcements</p>
             </div>
           </div>
-          <Button onClick={() => setShowForm(!showForm)}>
+          <Button onClick={() => setShowForm(!showForm)} className="w-full md:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             New Announcement
           </Button>
@@ -188,12 +189,15 @@ export default function AnnouncementManagement() {
                   <Label htmlFor="message">Message</Label>
                   <Textarea
                     id="message"
-                    placeholder="Announcement content"
+                    placeholder="Announcement content. Use **text** for bold formatting."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     rows={4}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Tip: Use **double asterisks** around text to make it bold.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -260,7 +264,9 @@ export default function AnnouncementManagement() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap">{announcement.message}</p>
+                <p className="whitespace-pre-wrap">
+                  <FormattedText text={announcement.message} />
+                </p>
               </CardContent>
             </Card>
           ))}

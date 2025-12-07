@@ -241,7 +241,7 @@ const ComplaintDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 p-4 md:p-6 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-6 animate-fade-in">
       <div className="container mx-auto max-w-5xl">
         <Button
           variant="ghost"

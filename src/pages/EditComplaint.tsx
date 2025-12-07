@@ -199,8 +199,8 @@ const EditComplaint = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10">
-      <div className="container mx-auto p-4 md:p-6 max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="container mx-auto p-4 md:p-6 max-w-4xl animate-fade-in">
         <Button
           variant="ghost"
           onClick={() => navigate(`/student/complaint/${id}`)}
@@ -210,7 +210,7 @@ const EditComplaint = () => {
           Back to Complaint
         </Button>
 
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-2xl">Edit Complaint</CardTitle>
           </CardHeader>

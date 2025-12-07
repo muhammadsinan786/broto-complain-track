@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Megaphone, Download } from "lucide-react";
+import { FormattedText } from "@/components/FormattedText";
 
 interface Announcement {
   id: string;
@@ -64,15 +65,15 @@ export default function Announcements() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
+      <div className="max-w-4xl mx-auto animate-fade-in">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Announcements</h1>
-            <p className="text-muted-foreground">Important updates and notices</p>
+            <h1 className="text-2xl md:text-3xl font-bold">Announcements</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Important updates and notices</p>
           </div>
         </div>
 
@@ -101,7 +102,9 @@ export default function Announcements() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="whitespace-pre-wrap mb-4">{announcement.message}</p>
+                  <p className="whitespace-pre-wrap mb-4">
+                    <FormattedText text={announcement.message} />
+                  </p>
                   {announcement.attachment_url && (
                     <Button
                       variant="outline"
