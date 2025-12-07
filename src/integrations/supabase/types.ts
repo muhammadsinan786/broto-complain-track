@@ -40,7 +40,7 @@ export type Database = {
       }
       announcements: {
         Row: {
-          admin_id: string
+          admin_id: string | null
           attachment_url: string | null
           created_at: string | null
           expiry_date: string | null
@@ -50,7 +50,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          admin_id: string
+          admin_id?: string | null
           attachment_url?: string | null
           created_at?: string | null
           expiry_date?: string | null
@@ -60,7 +60,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          admin_id?: string
+          admin_id?: string | null
           attachment_url?: string | null
           created_at?: string | null
           expiry_date?: string | null
@@ -79,7 +79,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           action: string
@@ -88,7 +88,7 @@ export type Database = {
           entity_id: string
           entity_type: string
           id?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           action?: string
@@ -97,7 +97,7 @@ export type Database = {
           entity_id?: string
           entity_type?: string
           id?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -303,7 +303,15 @@ export type Database = {
           note?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_internal_notes_complaint"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {

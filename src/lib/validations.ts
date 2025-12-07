@@ -92,3 +92,30 @@ export const ratingSchema = z.object({
     .max(500, "Feedback must be less than 500 characters")
     .optional()
 });
+
+// Feedback validation schema
+export const feedbackSchema = z.object({
+  title: z.string()
+    .trim()
+    .min(5, "Title must be at least 5 characters")
+    .max(200, "Title must be less than 200 characters"),
+  description: z.string()
+    .trim()
+    .min(10, "Description must be at least 10 characters")
+    .max(2000, "Description must be less than 2000 characters"),
+  category: z.enum(["suggestion", "improvement", "bug"], {
+    errorMap: () => ({ message: "Please select a valid category" })
+  })
+});
+
+// Announcement validation schema
+export const announcementSchema = z.object({
+  title: z.string()
+    .trim()
+    .min(5, "Title must be at least 5 characters")
+    .max(200, "Title must be less than 200 characters"),
+  message: z.string()
+    .trim()
+    .min(10, "Message must be at least 10 characters")
+    .max(5000, "Message must be less than 5000 characters")
+});
