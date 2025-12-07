@@ -130,15 +130,15 @@ export default function FeedbackManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto animate-fade-in">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Feedback Management</h1>
-            <p className="text-muted-foreground">Review and manage user feedback</p>
+            <h1 className="text-2xl md:text-3xl font-bold">Feedback Management</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Review and manage user feedback</p>
           </div>
         </div>
 
