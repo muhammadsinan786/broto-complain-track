@@ -1,17 +1,28 @@
-import { Home, FileText, Bell, User, BarChart3 } from "lucide-react";
+import { Home, FileText, Bell, User, BarChart3, LayoutDashboard } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { userRole } = useAuth();
 
-  const navItems = [
+  const studentNavItems = [
     { icon: Home, label: "Home", path: "/student" },
     { icon: BarChart3, label: "Polls", path: "/polls" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
+
+  const adminNavItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
+    { icon: BarChart3, label: "Polls", path: "/polls-management" },
+    { icon: Bell, label: "Announce", path: "/announcement-management" },
+    { icon: User, label: "Profile", path: "/profile" },
+  ];
+
+  const navItems = userRole === "admin" ? adminNavItems : studentNavItems;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 safe-area-pb">
