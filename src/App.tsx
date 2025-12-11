@@ -20,6 +20,8 @@ import FeedbackManagement from "./pages/FeedbackManagement";
 import Announcements from "./pages/Announcements";
 import AnnouncementManagement from "./pages/AnnouncementManagement";
 import Notifications from "./pages/Notifications";
+import PollsAndSurveys from "./pages/PollsAndSurveys";
+import PollsManagement from "./pages/PollsManagement";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App = () => (
             <Route path="/feedback-management" element={<FeedbackManagement />} />
             <Route path="/announcements" element={<Announcements />} />
             <Route path="/announcement-management" element={<AnnouncementManagement />} />
+            <Route path="/polls" element={<PollsAndSurveys />} />
+            <Route path="/polls-management" element={<PollsManagement />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -11,6 +11,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { DesktopHeader } from "@/components/DesktopHeader";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 interface Complaint {
   id: string;
@@ -113,6 +114,7 @@ const StudentDashboard = () => {
         )}
       </div>
       <MobileBottomNav />
+      <Chatbot />
     </div>
   );
 };

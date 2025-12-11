@@ -13,8 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { BarChart3, Clock, CheckCircle2, XCircle, Vote } from "lucide-react";
 import { format, isPast } from "date-fns";
-import DesktopHeader from "@/components/DesktopHeader";
-import MobileBottomNav from "@/components/MobileBottomNav";
+import { DesktopHeader } from "@/components/DesktopHeader";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import Chatbot from "@/components/chatbot/Chatbot";
 
 type Poll = {

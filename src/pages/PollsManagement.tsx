@@ -18,8 +18,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "@/hooks/use-toast";
 import { Plus, Trash2, BarChart3, Clock, Eye, EyeOff, X, CheckCircle2, XCircle } from "lucide-react";
 import { format, isPast } from "date-fns";
-import DesktopHeader from "@/components/DesktopHeader";
-import MobileBottomNav from "@/components/MobileBottomNav";
+import { DesktopHeader } from "@/components/DesktopHeader";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 type Poll = {
   id: string;
@@ -63,7 +63,7 @@ type SurveyQuestion = {
 };
 
 const PollsManagement = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, userRole } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
@@ -87,7 +87,7 @@ const PollsManagement = () => {
   ]);
 
   // Redirect if not admin
-  if (!isAdmin) {
+  if (userRole !== 'admin') {
     navigate("/");
     return null;
   }
