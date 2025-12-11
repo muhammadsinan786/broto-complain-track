@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Megaphone, Download } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 interface Announcement {
   id: string;
@@ -121,6 +122,7 @@ export default function Announcements() {
           </div>
         )}
       </div>
+      <Chatbot />
     </div>
   );
 }

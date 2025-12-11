@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 const Notifications = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const Notifications = () => {
         </div>
       </div>
       <MobileBottomNav />
+      <Chatbot />
     </div>
   );
 };

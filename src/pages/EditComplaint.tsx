@@ -11,6 +11,7 @@ import { ArrowLeft, Upload, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { complaintSchema, validateFiles } from "@/lib/validations";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 const EditComplaint = () => {
   const { user } = useAuth();
@@ -327,6 +328,7 @@ const EditComplaint = () => {
           </CardContent>
         </Card>
       </div>
+      <Chatbot />
     </div>
   );
 };

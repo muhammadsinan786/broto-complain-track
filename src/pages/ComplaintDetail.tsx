@@ -14,6 +14,7 @@ import { messageSchema, ratingSchema } from "@/lib/validations";
 import { ComplaintTimeline } from "@/components/ComplaintTimeline";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 interface Complaint {
   id: string;
@@ -450,6 +451,7 @@ const ComplaintDetail = () => {
           </div>
         </div>
       </div>
+      <Chatbot />
     </div>
   );
 };

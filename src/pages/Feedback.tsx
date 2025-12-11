@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Send } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { feedbackSchema } from "@/lib/validations";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 export default function Feedback() {
   const navigate = useNavigate();
@@ -142,6 +143,7 @@ export default function Feedback() {
           </CardContent>
         </Card>
       </div>
+      <Chatbot />
     </div>
   );
 }

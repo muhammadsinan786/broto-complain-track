@@ -11,6 +11,7 @@ import { ArrowLeft, Trash2, Save, Sun, Moon, Monitor, Calendar, Star, CheckCircl
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 const Profile = () => {
   const { user, signOut, userRole } = useAuth();
@@ -471,6 +472,7 @@ const Profile = () => {
           )}
         </div>
       </div>
+      <Chatbot />
     </div>
   );
 };
