@@ -1,4 +1,4 @@
-import { Home, FileText, Bell, User } from "lucide-react";
+import { Home, FileText, Bell, User, BarChart3 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -8,7 +8,7 @@ export const MobileBottomNav = () => {
 
   const navItems = [
     { icon: Home, label: "Home", path: "/student" },
-    { icon: FileText, label: "Complaints", path: "/student" },
+    { icon: BarChart3, label: "Polls", path: "/polls" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
