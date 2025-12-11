@@ -15,6 +15,7 @@ export const DesktopHeader = () => {
     { icon: FileText, label: "New Complaint", path: "/student/new" },
     { icon: MessageSquare, label: "Feedback", path: "/feedback" },
     { icon: Bell, label: "Announcements", path: "/announcements" },
+    { icon: BarChart3, label: "Polls", path: "/polls" },
   ];
 
   const adminNavItems = [
@@ -22,6 +23,7 @@ export const DesktopHeader = () => {
     { icon: BarChart3, label: "Analytics", path: "/analytics" },
     { icon: MessageSquare, label: "Feedback", path: "/feedback-management" },
     { icon: Bell, label: "Announcements", path: "/announcement-management" },
+    { icon: FileText, label: "Polls", path: "/polls-management" },
   ];
 
   const navItems = userRole === "admin" ? adminNavItems : studentNavItems;
