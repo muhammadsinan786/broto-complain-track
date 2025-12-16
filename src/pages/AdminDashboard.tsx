@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBadge } from "@/components/StatusBadge";
 import { PriorityBadge } from "@/components/PriorityBadge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogOut, TrendingUp, Clock, CheckCircle, AlertCircle, User } from "lucide-react";
+import { LogOut, TrendingUp, Clock, CheckCircle, AlertCircle, User, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -160,6 +160,10 @@ const AdminDashboard = () => {
             </Button>
             <Button onClick={() => navigate("/announcement-management")} variant="outline" size="lg">
               Announcements
+            </Button>
+            <Button onClick={() => navigate("/polls-management")} variant="outline" size="lg">
+              <BarChart3 className="mr-2 h-5 w-5" />
+              Polls
             </Button>
             <Button onClick={() => navigate("/profile")} variant="outline" size="lg">
               <User className="mr-2 h-5 w-5" />
