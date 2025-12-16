@@ -209,7 +209,9 @@ const PollsAndSurveys = () => {
   const renderPollCard = (poll: Poll, isClosed: boolean) => {
     const voted = hasVoted(poll.id);
     const expired = isExpired(poll.expiry_date);
-    const showResults = poll.show_results || voted || expired;
+    const canVote = !voted && !expired && poll.is_active;
+    const showResults = voted || expired || isClosed;
+    const canSeeResults = showResults && (poll.show_results || voted);
     const voteCounts = getVoteCounts(poll.id);
     const pollOptions = pollsData?.options.filter((o) => o.poll_id === poll.id) || [];
 
@@ -245,24 +247,7 @@ const PollsAndSurveys = () => {
           )}
         </CardHeader>
         <CardContent>
-          {showResults ? (
-            <div className="space-y-3">
-              {voteCounts.map((opt) => (
-                <div key={opt.id} className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span>{opt.option_text}</span>
-                    <span className="text-muted-foreground">
-                      {opt.count} ({opt.percentage.toFixed(0)}%)
-                    </span>
-                  </div>
-                  <Progress value={opt.percentage} className="h-2" />
-                </div>
-              ))}
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Total votes: {pollsData?.votes.filter((v) => v.poll_id === poll.id).length || 0}
-              </p>
-            </div>
-          ) : (
+          {canVote ? (
             <div className="space-y-3">
               <RadioGroup
                 value={selectedOptions[poll.id] || ""}
@@ -281,11 +266,34 @@ const PollsAndSurveys = () => {
               </RadioGroup>
               <Button
                 onClick={() => handleVote(poll.id)}
-                disabled={voteMutation.isPending}
+                disabled={voteMutation.isPending || !selectedOptions[poll.id]}
                 className="w-full"
               >
-                Submit Vote
+                {voteMutation.isPending ? "Submitting..." : "Submit Vote"}
               </Button>
+            </div>
+          ) : canSeeResults ? (
+            <div className="space-y-3">
+              {voteCounts.map((opt) => (
+                <div key={opt.id} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>{opt.option_text}</span>
+                    <span className="text-muted-foreground">
+                      {opt.count} ({opt.percentage.toFixed(0)}%)
+                    </span>
+                  </div>
+                  <Progress value={opt.percentage} className="h-2" />
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Total votes: {pollsData?.votes.filter((v) => v.poll_id === poll.id).length || 0}
+              </p>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground">
+                {voted ? "You have voted. Results will be available when the poll ends." : "This poll is no longer accepting votes."}
+              </p>
             </div>
           )}
         </CardContent>
