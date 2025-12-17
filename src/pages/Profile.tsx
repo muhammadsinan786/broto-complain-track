@@ -7,11 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Trash2, Save, Sun, Moon, Monitor, Calendar, Star, CheckCircle } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { AppLayout } from "@/components/layout";
+import { Trash2, Save, Sun, Moon, Monitor, Calendar, Star, CheckCircle, FileText, User, Lock, Phone, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import Chatbot from "@/components/chatbot/Chatbot";
+import { cn } from "@/lib/utils";
 
 const Profile = () => {
   const { user, signOut, userRole } = useAuth();
@@ -44,33 +47,34 @@ const Profile = () => {
         .from("profiles")
         .select("*")
         .eq("id", user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
-      setName(data.name || "");
-      setEmail(data.email || "");
-      setPhone(data.phone || "");
-      
-      // Fetch complaint stats
-      const { data: complaints } = await supabase
-        .from("complaints")
-        .select("status, rating, created_at")
-        .eq("student_id", user?.id);
+      if (data) {
+        setName(data.name || "");
+        setEmail(data.email || "");
+        setPhone(data.phone || "");
+        
+        const { data: complaints } = await supabase
+          .from("complaints")
+          .select("status, rating, created_at")
+          .eq("student_id", user?.id);
 
-      if (complaints) {
-        const resolved = complaints.filter(c => c.status === "resolved").length;
-        const ratings = complaints.filter(c => c.rating).map(c => c.rating!);
-        const avgRating = ratings.length > 0 
-          ? ratings.reduce((a, b) => a + b, 0) / ratings.length 
-          : 0;
+        if (complaints) {
+          const resolved = complaints.filter(c => c.status === "resolved").length;
+          const ratings = complaints.filter(c => c.rating).map(c => c.rating!);
+          const avgRating = ratings.length > 0 
+            ? ratings.reduce((a, b) => a + b, 0) / ratings.length 
+            : 0;
 
-        setStats({
-          total: complaints.length,
-          resolved,
-          avgRating,
-          joinedDate: data.created_at,
-        });
+          setStats({
+            total: complaints.length,
+            resolved,
+            avgRating,
+            joinedDate: data.created_at,
+          });
+        }
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -91,7 +95,6 @@ const Profile = () => {
     setSaving(true);
 
     try {
-      // Update profile
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -102,7 +105,6 @@ const Profile = () => {
 
       if (profileError) throw profileError;
 
-      // Update password if provided
       if (newPassword) {
         if (newPassword !== confirmPassword) {
           toast.error("Passwords do not match");
@@ -122,7 +124,6 @@ const Profile = () => {
           return;
         }
 
-        // Verify current password before allowing change
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: email,
           password: currentPassword,
@@ -169,7 +170,6 @@ const Profile = () => {
     setDeleting(true);
 
     try {
-      // Verify password first
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email,
         password: deletePassword,
@@ -181,7 +181,6 @@ const Profile = () => {
         return;
       }
 
-      // Permanently delete all user's complaints
       const { error: complaintsError } = await supabase
         .from("complaints")
         .delete()
@@ -189,7 +188,6 @@ const Profile = () => {
 
       if (complaintsError) throw complaintsError;
 
-      // Log the deletion
       await supabase.from("audit_logs").insert({
         user_id: user?.id!,
         action: "account_deleted",
@@ -197,9 +195,6 @@ const Profile = () => {
         entity_id: user?.id!,
         details: { reason: "user_requested" }
       });
-
-      // Note: User deletion will cascade delete related data due to foreign key constraints
-      // The soft-deleted complaints will remain in the database for audit purposes
 
       toast.success("Account deleted successfully. Goodbye!");
       
@@ -216,228 +211,212 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
+      <AppLayout title="Profile">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-pulse text-muted-foreground">Loading profile...</div>
+        </div>
+      </AppLayout>
     );
   }
 
+  const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: typeof FileText; color: string }) => (
+    <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50">
+      <div className={cn("p-2.5 rounded-lg", color)}>
+        <Icon className="h-5 w-5 text-white" />
+      </div>
+      <div>
+        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10">
-      <div className="container mx-auto p-4 md:p-6 max-w-4xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(userRole === "admin" ? "/admin" : "/student")}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Button>
+    <AppLayout title="Profile" subtitle="Manage your account settings and preferences">
+      {/* Mobile Title */}
+      <div className="md:hidden mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
+        <p className="text-muted-foreground text-sm mt-1">Account settings</p>
+      </div>
 
-        <div className="space-y-6">
-          {/* Profile Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="animate-fade-in">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <CheckCircle className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.total}</p>
-                    <p className="text-sm text-muted-foreground">Total Complaints</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Stats */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Activity Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard label="Total Complaints" value={stats.total} icon={FileText} color="bg-primary" />
+              <StatCard label="Resolved" value={stats.resolved} icon={CheckCircle} color="bg-status-resolved" />
+              <StatCard label="Avg Rating" value={stats.avgRating.toFixed(1)} icon={Star} color="bg-status-pending" />
+              <StatCard 
+                label="Member Since" 
+                value={stats.joinedDate ? formatDistanceToNow(new Date(stats.joinedDate), { addSuffix: false }) : "N/A"} 
+                icon={Calendar} 
+                color="bg-status-in-progress" 
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-500/10">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.resolved}</p>
-                    <p className="text-sm text-muted-foreground">Resolved</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-yellow-500/10">
-                    <Star className="h-5 w-5 text-yellow-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.avgRating.toFixed(1)}</p>
-                    <p className="text-sm text-muted-foreground">Avg Rating</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/10">
-                    <Calendar className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Joined</p>
-                    <p className="text-xs text-muted-foreground">
-                      {stats.joinedDate && formatDistanceToNow(new Date(stats.joinedDate), { addSuffix: true })}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="animate-slide-up">
-            <CardHeader>
-              <CardTitle className="text-2xl">Edit Profile</CardTitle>
-              <CardDescription>Update your personal information</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleUpdateProfile} className="space-y-6">
+        {/* Profile Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              Personal Information
+            </CardTitle>
+            <CardDescription>Update your profile details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleUpdateProfile} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your full name"
-                    required
-                  />
+                  <Label htmlFor="name">Full Name *</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your full name"
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    disabled
-                    className="bg-muted"
-                  />
-                  <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      disabled
+                      className="pl-10 bg-muted"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="phone">Phone (Optional)</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Your phone number"
-                  />
-                </div>
-
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Theme Preference</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    <Button
-                      type="button"
-                      variant={theme === "light" ? "default" : "outline"}
-                      onClick={() => setTheme("light")}
-                      className="flex flex-col gap-2 h-auto py-3"
-                    >
-                      <Sun className="h-5 w-5" />
-                      <span className="text-xs">Light</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={theme === "dark" ? "default" : "outline"}
-                      onClick={() => setTheme("dark")}
-                      className="flex flex-col gap-2 h-auto py-3"
-                    >
-                      <Moon className="h-5 w-5" />
-                      <span className="text-xs">Dark</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={theme === "system" ? "default" : "outline"}
-                      onClick={() => setTheme("system")}
-                      className="flex flex-col gap-2 h-auto py-3"
-                    >
-                      <Monitor className="h-5 w-5" />
-                      <span className="text-xs">System</span>
-                    </Button>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Your phone number"
+                      className="pl-10"
+                    />
                   </div>
                 </div>
+              </div>
 
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Change Password (Optional)</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password *</Label>
-                      <Input
-                        id="currentPassword"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        placeholder="Enter current password"
-                      />
-                      <p className="text-xs text-muted-foreground">Required to change password</p>
-                    </div>
+              <Separator />
 
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input
-                        id="newPassword"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter new password"
-                      />
-                    </div>
+              {/* Theme Preference */}
+              <div className="space-y-4">
+                <h3 className="font-medium">Theme Preference</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: "light", icon: Sun, label: "Light" },
+                    { value: "dark", icon: Moon, label: "Dark" },
+                    { value: "system", icon: Monitor, label: "System" },
+                  ].map(({ value, icon: Icon, label }) => (
+                    <Button
+                      key={value}
+                      type="button"
+                      variant={theme === value ? "default" : "outline"}
+                      onClick={() => setTheme(value as any)}
+                      className="flex flex-col gap-2 h-auto py-4"
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="text-xs">{label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm new password"
-                      />
-                    </div>
+              <Separator />
+
+              {/* Password Change */}
+              <div className="space-y-4">
+                <h3 className="font-medium flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Change Password
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">Current Password</Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Current password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="New password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm password"
+                    />
                   </div>
                 </div>
+              </div>
 
-                <Button type="submit" disabled={saving} className="w-full">
-                  <Save className="mr-2 h-4 w-4" />
-                  {saving ? "Saving..." : "Save Changes"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              <Button type="submit" disabled={saving} className="w-full">
+                <Save className="mr-2 h-4 w-4" />
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
-          {userRole !== "admin" && (
-            <Card className="border-destructive">
-              <CardHeader>
-                <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                <CardDescription>
-                  Permanently delete your account and all associated data
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete My Account
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription className="space-y-4">
+        {/* Danger Zone */}
+        {userRole !== "admin" && (
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="text-lg text-destructive flex items-center gap-2">
+                <Trash2 className="h-5 w-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>
+                Permanently delete your account and all associated data
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete My Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription asChild>
+                      <div className="space-y-4">
                         <p>
                           This action cannot be undone. This will permanently delete your account and remove all your complaints and data from our servers.
                         </p>
@@ -451,29 +430,30 @@ const Profile = () => {
                             placeholder="Your password"
                           />
                         </div>
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setDeletePassword("")}>
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDeleteAccount}
-                        disabled={deleting}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        {deleting ? "Deleting..." : "Delete Account"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setDeletePassword("")}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      disabled={deleting}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deleting ? "Deleting..." : "Delete Account"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+        )}
       </div>
+
       <Chatbot />
-    </div>
+    </AppLayout>
   );
 };
 
