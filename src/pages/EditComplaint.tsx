@@ -165,16 +165,12 @@ const EditComplaint = () => {
 
           if (uploadError) throw uploadError;
 
-          const { data: { publicUrl } } = supabase.storage
-            .from("complaint-attachments")
-            .getPublicUrl(filePath);
-
           const { error: attachmentError } = await supabase
             .from("complaint_attachments")
             .insert({
               complaint_id: id!,
               file_name: file.name,
-              file_url: publicUrl,
+              file_url: filePath, // Store path instead of public URL for private bucket
             });
 
           if (attachmentError) throw attachmentError;
