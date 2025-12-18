@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { feedbackSchema } from "@/lib/validations";
 import Chatbot from "@/components/chatbot/Chatbot";
+import { AppLayout } from "@/components/layout";
 
 export default function Feedback() {
   const navigate = useNavigate();
@@ -22,7 +23,6 @@ export default function Feedback() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate input using Zod schema
     const validation = feedbackSchema.safeParse({ title, description, category });
     if (!validation.success) {
       toast({
@@ -73,20 +73,8 @@ export default function Feedback() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
-      <div className="max-w-2xl mx-auto animate-fade-in">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Feedback & Suggestions</h1>
-            <p className="text-muted-foreground text-sm md:text-base">
-              Share your ideas to help us improve
-            </p>
-          </div>
-        </div>
-
+    <AppLayout title="Feedback & Suggestions" subtitle="Share your ideas to help us improve">
+      <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Submit Feedback</CardTitle>
@@ -144,6 +132,6 @@ export default function Feedback() {
         </Card>
       </div>
       <Chatbot />
-    </div>
+    </AppLayout>
   );
 }
