@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { FormattedText } from "@/components/FormattedText";
+import { AppLayout } from "@/components/layout";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Announcement {
   id: string;
@@ -143,88 +145,99 @@ export default function AnnouncementManagement() {
     fetchAnnouncements();
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
+  const actions = (
+    <Button onClick={() => setShowForm(!showForm)}>
+      <Plus className="h-4 w-4 mr-2" />
+      New Announcement
+    </Button>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto animate-fade-in">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Announcement Management</h1>
-              <p className="text-muted-foreground text-sm md:text-base">Create and manage announcements</p>
-            </div>
-          </div>
-          <Button onClick={() => setShowForm(!showForm)} className="w-full md:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
-            New Announcement
-          </Button>
-        </div>
+    <AppLayout 
+      title="Announcement Management" 
+      subtitle="Create and manage announcements"
+      actions={actions}
+    >
+      {/* Mobile action button */}
+      <div className="md:hidden mb-4">
+        <Button onClick={() => setShowForm(!showForm)} className="w-full">
+          <Plus className="h-4 w-4 mr-2" />
+          New Announcement
+        </Button>
+      </div>
 
-        {showForm && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Create Announcement</CardTitle>
-              <CardDescription>Post an announcement for all users</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    placeholder="Announcement title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                  />
-                </div>
+      {showForm && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Create Announcement</CardTitle>
+            <CardDescription>Post an announcement for all users</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Announcement title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Announcement content. Use **text** for bold formatting."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    rows={4}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Tip: Use **double asterisks** around text to make it bold.
-                  </p>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
+                  placeholder="Announcement content. Use **text** for bold formatting."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={4}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Tip: Use **double asterisks** around text to make it bold.
+                </p>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="expiry">Expiry Date (Optional)</Label>
-                  <Input
-                    id="expiry"
-                    type="date"
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(e.target.value)}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="expiry">Expiry Date (Optional)</Label>
+                <Input
+                  id="expiry"
+                  type="date"
+                  value={expiryDate}
+                  onChange={(e) => setExpiryDate(e.target.value)}
+                />
+              </div>
 
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? "Creating..." : "Create Announcement"}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                    Cancel
-                  </Button>
-                </div>
-              </form>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? "Creating..." : "Create Announcement"}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-4">
+        {loading ? (
+          <>
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </>
+        ) : announcements.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <p className="text-xl font-semibold mb-2">No announcements</p>
+              <p className="text-muted-foreground">Create your first announcement</p>
             </CardContent>
           </Card>
-        )}
-
-        <div className="space-y-4">
-          {announcements.map((announcement) => (
+        ) : (
+          announcements.map((announcement) => (
             <Card key={announcement.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -264,14 +277,14 @@ export default function AnnouncementManagement() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap">
+                <div className="text-sm text-muted-foreground whitespace-pre-wrap">
                   <FormattedText text={announcement.message} />
-                </p>
+                </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          ))
+        )}
       </div>
-    </div>
+    </AppLayout>
   );
 }

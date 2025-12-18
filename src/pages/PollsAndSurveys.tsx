@@ -10,11 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { BarChart3, Clock, CheckCircle2, XCircle, Vote } from "lucide-react";
 import { format, isPast } from "date-fns";
-import { DesktopHeader } from "@/components/DesktopHeader";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { AppLayout } from "@/components/layout";
 import Chatbot from "@/components/chatbot/Chatbot";
 
 type Poll = {
@@ -131,7 +131,6 @@ const PollsAndSurveys = () => {
   // Survey submission mutation
   const submitSurveyMutation = useMutation({
     mutationFn: async ({ surveyId, answers }: { surveyId: string; answers: Record<string, string> }) => {
-      // Create response
       const { data: responseData, error: responseError } = await supabase
         .from("survey_responses")
         .insert({ survey_id: surveyId, user_id: user!.id })
@@ -140,7 +139,6 @@ const PollsAndSurveys = () => {
 
       if (responseError) throw responseError;
 
-      // Create answers
       const answerInserts = Object.entries(answers).map(([questionId, answer]) => ({
         response_id: responseData.id,
         question_id: questionId,
@@ -370,9 +368,7 @@ const PollsAndSurveys = () => {
                       ))}
                     </RadioGroup>
                   ) : (
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border rounded-md"
+                    <Input
                       placeholder="Your answer..."
                       value={surveyAnswers[survey.id]?.[q.id] || ""}
                       onChange={(e) =>
@@ -406,88 +402,76 @@ const PollsAndSurveys = () => {
   const isLoading = pollsLoading || surveysLoading;
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-6">
-      <DesktopHeader />
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="flex items-center gap-3 mb-6">
-          <BarChart3 className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold">Polls & Surveys</h1>
-            <p className="text-muted-foreground text-sm">Share your opinion and help us improve</p>
-          </div>
-        </div>
+    <AppLayout title="Polls & Surveys" subtitle="Share your opinion and help us improve">
+      <Tabs defaultValue="active-polls" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsTrigger value="active-polls" className="text-xs md:text-sm">
+            Active Polls
+          </TabsTrigger>
+          <TabsTrigger value="closed-polls" className="text-xs md:text-sm">
+            Closed Polls
+          </TabsTrigger>
+          <TabsTrigger value="surveys" className="text-xs md:text-sm">
+            Surveys
+          </TabsTrigger>
+          <TabsTrigger value="closed-surveys" className="text-xs md:text-sm">
+            Past Surveys
+          </TabsTrigger>
+        </TabsList>
 
-        <Tabs defaultValue="active-polls" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="active-polls" className="text-xs md:text-sm">
-              Active Polls
-            </TabsTrigger>
-            <TabsTrigger value="closed-polls" className="text-xs md:text-sm">
-              Closed Polls
-            </TabsTrigger>
-            <TabsTrigger value="surveys" className="text-xs md:text-sm">
-              Surveys
-            </TabsTrigger>
-            <TabsTrigger value="closed-surveys" className="text-xs md:text-sm">
-              Past Surveys
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="active-polls" className="space-y-4">
-            {isLoading ? (
-              <>
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-48 w-full" />
-              </>
-            ) : activePolls.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-muted-foreground">No active polls at the moment.</p>
-              </Card>
-            ) : (
-              activePolls.map((poll) => renderPollCard(poll, false))
-            )}
-          </TabsContent>
-
-          <TabsContent value="closed-polls" className="space-y-4">
-            {isLoading ? (
+        <TabsContent value="active-polls" className="space-y-4">
+          {isLoading ? (
+            <>
               <Skeleton className="h-48 w-full" />
-            ) : closedPolls.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-muted-foreground">No closed polls.</p>
-              </Card>
-            ) : (
-              closedPolls.map((poll) => renderPollCard(poll, true))
-            )}
-          </TabsContent>
-
-          <TabsContent value="surveys" className="space-y-4">
-            {isLoading ? (
-              <Skeleton className="h-64 w-full" />
-            ) : activeSurveys.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-muted-foreground">No active surveys at the moment.</p>
-              </Card>
-            ) : (
-              activeSurveys.map((survey) => renderSurveyCard(survey, false))
-            )}
-          </TabsContent>
-
-          <TabsContent value="closed-surveys" className="space-y-4">
-            {isLoading ? (
               <Skeleton className="h-48 w-full" />
-            ) : closedSurveys.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-muted-foreground">No past surveys.</p>
-              </Card>
-            ) : (
-              closedSurveys.map((survey) => renderSurveyCard(survey, true))
-            )}
-          </TabsContent>
-        </Tabs>
-      </main>
-      <MobileBottomNav />
+            </>
+          ) : activePolls.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No active polls at the moment.</p>
+            </Card>
+          ) : (
+            activePolls.map((poll) => renderPollCard(poll, false))
+          )}
+        </TabsContent>
+
+        <TabsContent value="closed-polls" className="space-y-4">
+          {isLoading ? (
+            <Skeleton className="h-48 w-full" />
+          ) : closedPolls.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No closed polls.</p>
+            </Card>
+          ) : (
+            closedPolls.map((poll) => renderPollCard(poll, true))
+          )}
+        </TabsContent>
+
+        <TabsContent value="surveys" className="space-y-4">
+          {isLoading ? (
+            <Skeleton className="h-48 w-full" />
+          ) : activeSurveys.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No active surveys at the moment.</p>
+            </Card>
+          ) : (
+            activeSurveys.map((survey) => renderSurveyCard(survey, false))
+          )}
+        </TabsContent>
+
+        <TabsContent value="closed-surveys" className="space-y-4">
+          {isLoading ? (
+            <Skeleton className="h-48 w-full" />
+          ) : closedSurveys.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No past surveys.</p>
+            </Card>
+          ) : (
+            closedSurveys.map((survey) => renderSurveyCard(survey, true))
+          )}
+        </TabsContent>
+      </Tabs>
       <Chatbot />
-    </div>
+    </AppLayout>
   );
 };
 
