@@ -12,6 +12,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { complaintSchema, validateFiles } from "@/lib/validations";
 import Chatbot from "@/components/chatbot/Chatbot";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AppLayout } from "@/components/layout";
 
 const EditComplaint = () => {
   const { user } = useAuth();
@@ -170,7 +172,7 @@ const EditComplaint = () => {
             .insert({
               complaint_id: id!,
               file_name: file.name,
-              file_url: filePath, // Store path instead of public URL for private bucket
+              file_url: filePath,
             });
 
           if (attachmentError) throw attachmentError;
@@ -189,143 +191,154 @@ const EditComplaint = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
+      <AppLayout title="Edit Complaint">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-1/3" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Skeleton className="h-10 w-full" />
+            <div className="grid grid-cols-2 gap-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto p-4 md:p-6 max-w-4xl animate-fade-in">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(`/student/complaint/${id}`)}
-          className="mb-6"
-        >
+    <AppLayout
+      title="Edit Complaint"
+      actions={
+        <Button variant="outline" onClick={() => navigate(`/student/complaint/${id}`)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Complaint
         </Button>
+      }
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>Update Your Complaint</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Brief summary of your complaint"
+                required
+              />
+            </div>
 
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-2xl">Edit Complaint</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="category">Category *</Label>
+                <Select value={category} onValueChange={(value: any) => setCategory(value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="academic">Academic</SelectItem>
+                    <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                    <SelectItem value="technical">Technical</SelectItem>
+                    <SelectItem value="administrative">Administrative</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority *</Label>
+                <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description *</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Provide detailed information about your complaint"
+                rows={6}
+                required
+              />
+            </div>
+
+            {existingAttachments.length > 0 && (
+              <div className="space-y-2">
+                <Label>Current Attachments</Label>
+                <div className="space-y-2">
+                  {existingAttachments.map((attachment) => (
+                    <div key={attachment.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
+                      <span className="text-sm font-medium truncate">{attachment.file_name}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeExistingAttachment(attachment.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="attachments">Add New Attachments (Optional)</Label>
+              <div className="flex items-center gap-2">
                 <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Brief summary of your complaint"
-                  required
+                  id="attachments"
+                  type="file"
+                  onChange={(e) => setFiles(e.target.files)}
+                  accept="image/*,.pdf,.doc,.docx"
+                  multiple
+                  className="cursor-pointer"
                 />
+                <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
               </div>
+              <p className="text-xs text-muted-foreground">
+                Max 5 files, 10MB each. Supported: Images, PDF, DOC, DOCX
+              </p>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
-                  <Select value={category} onValueChange={(value: any) => setCategory(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="academic">Academic</SelectItem>
-                      <SelectItem value="infrastructure">Infrastructure</SelectItem>
-                      <SelectItem value="technical">Technical</SelectItem>
-                      <SelectItem value="administrative">Administrative</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="priority">Priority *</Label>
-                  <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Provide detailed information about your complaint"
-                  rows={6}
-                  required
-                />
-              </div>
-
-              {existingAttachments.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Current Attachments</Label>
-                  <div className="space-y-2">
-                    {existingAttachments.map((attachment) => (
-                      <div key={attachment.id} className="flex items-center justify-between p-2 bg-secondary/20 rounded">
-                        <span className="text-sm">{attachment.file_name}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeExistingAttachment(attachment.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="attachments">Add New Attachments (Optional)</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="attachments"
-                    type="file"
-                    onChange={(e) => setFiles(e.target.files)}
-                    accept="image/*,.pdf,.doc,.docx"
-                    multiple
-                    className="cursor-pointer"
-                  />
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Max 5 files, 10MB each. Supported: Images, PDF, DOC, DOCX
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <Button type="submit" disabled={isSubmitting} className="flex-1">
-                  {isSubmitting ? "Updating..." : "Update Complaint"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate(`/student/complaint/${id}`)}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex gap-3 pt-4">
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
+                {isSubmitting ? "Updating..." : "Update Complaint"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(`/student/complaint/${id}`)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
       <Chatbot />
-    </div>
+    </AppLayout>
   );
 };
 
